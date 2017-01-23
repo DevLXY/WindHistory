@@ -1,9 +1,5 @@
 ﻿using Matlab;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 
 namespace WindHistory
@@ -12,8 +8,11 @@ namespace WindHistory
     {
         static void Main(string[] args)
         {
-            Matrix info = new Matrix(new double[,] { { 3, 4.5 }, { 2, 4 }, { 1, 4 } });
+            double[,] test = { { 3, 4.5 }, { 2, 4 }, { 1, 5 } };
+            Matrix info = new Matrix(test);
+
             WindHistory(4, 0.5, 5, 0.5, info);
+
         }
 
         private static void WindHistory(double f_sup, double alpha, double v_10, double k, Matrix info)
@@ -30,10 +29,11 @@ namespace WindHistory
             Matrix f = MatlabMethod.Linspace(f_sup / nf, f_sup, nf);
             int z_b = 10;
             int c_z = 10;
-            Matrix x = MatlabMethod.MatrixDotMult(1200 / v_10, f);
-            //下面两个式子没测试
-            Matrix s_ii = MatlabMethod.MatrixDotDiv(MatlabMethod.MatrixDotDiv(MatlabMethod.MatrixDotMult(v_10 * v_10 * 4 * k, MatlabMethod.MatrixPow(x, 2)), f), MatlabMethod.MatrixPow(MatlabMethod.MatrixAdd(1, MatlabMethod.MatrixPow(x, 2)), 4d / 3d));
-            Matrix v_zj = MatlabMethod.MatrixDotMult(v_10, MatlabMethod.MatrixPow(MatlabMethod.MatrixDotDiv(z_j, z_b), alpha));
+            Matrix x = 1200 * f / v_10;
+            Matrix s_ii = v_10 * v_10 * 4 * k * (x * x) / f / ((1 + x * x) ^ (4d / 3d));
+            //Matrix s_ii = MatlabMethod.MatrixDotDiv(MatlabMethod.MatrixDotDiv(MatlabMethod.MatrixDotMult(v_10 * v_10 * 4 * k, MatlabMethod.MatrixPow(x, 2)), f), MatlabMethod.MatrixPow(MatlabMethod.MatrixAdd(1, MatlabMethod.MatrixPow(x, 2)), 4d / 3d));
+            Matrix v_zj = v_10 * ((z_j / z_b) ^ alpha);
+            //Matrix v_zj = MatlabMethod.MatrixDotMult(v_10, MatlabMethod.MatrixPow(MatlabMethod.MatrixDotDiv(z_j, z_b), alpha));
             Matrix[] r_ij = new Matrix[nf];
             Matrix[] s_ij = new Matrix[nf];
             for (int i = 0; i < nf; i++)
@@ -55,6 +55,52 @@ namespace WindHistory
                     }
                 }
             }
+
+            Matrix[] h = new Matrix[nf];
+            for (int ii = 0; ii < nf; ii++)                  //nf个矩阵循环
+            {
+                h[ii] = new Matrix(np, np);
+                if (s_ij[ii] != (s_ij[ii]).Transposition())
+                {
+                    throw new Exception("不是对称方阵，无法进行cholesky分解");
+                }
+                for (int i = 1; i <= np; i++)
+                {
+                    h[ii][i, i] = s_ij[ii][i, i];
+                    if (i > 1)
+                    {
+                        for (int kk = 1; kk <= i - 1; kk++)
+                        {
+                            h[ii][i, i] -= h[ii][kk, i] * h[ii][kk, i];
+                        }
+                        h[ii][i, i] = Math.Sqrt(h[ii][i, i]);
+                    }
+                    else
+                    {
+                        h[ii][i, i] = Math.Sqrt(h[ii][i, i]);
+                    }
+
+                    for (int jj = i + 1; jj <= np; jj++)
+                    {
+                        h[ii][i, jj] = s_ij[ii][i, jj];
+                        if (i == 1)
+                        {
+                            h[ii][i, jj] = h[ii][i, jj] / h[ii][i, i];
+                        }
+                        else
+                        {
+                            for (int kk = 1; kk <= i - 1; kk++)
+                            {
+                                h[ii][i, jj] -= h[ii][kk, i] * h[ii][kk, jj];
+                            }
+                            h[ii][i, jj] = h[ii][i, jj] / h[ii][i, i];
+                        }
+
+                    }
+                }
+                h[ii] = h[ii].Transposition();
+            }
+
 
         }
 
