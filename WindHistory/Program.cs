@@ -100,8 +100,29 @@ namespace WindHistory
                 }
                 h[ii] = h[ii].Transposition();
             }
-
-
+            int nt = 4096;
+            double dt = 0.1;
+            double dw = f_sup * 2 * (Math.PI) / nf;
+            Matrix v = new Matrix(nt, np);
+            for (int jj = 1; jj <=np; jj++)
+            {
+                for (int ii = 1; ii <= nt; ii++)
+                {
+                    double t = (ii - 1) * dt;
+                    for (int m = 1; m <=jj ; m++)
+                    {
+                        for (int l = 1; l < nf; l++)
+                        {
+                            double w_ml = l * dw - (np - m) / np * dw;
+                            int n_w_ml =Convert.ToInt16( Math.Round(w_ml / dw)) + 1;
+                            Random rand = new Random();
+                            double rd = rand.Next();                                                                            //生成一个非负的随机整数
+                            v[ii, jj] += h[n_w_ml][jj, m] * Math.Sqrt(2 * dw) * Math.Cos(w_ml * t + 2 * Math.PI * rd);
+                        }
+                        
+                    }
+                }
+            }
         }
 
     }
