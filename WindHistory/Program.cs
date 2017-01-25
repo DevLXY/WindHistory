@@ -104,6 +104,10 @@ namespace WindHistory
             double dt = 0.1;
             double dw = f_sup * 2 * (Math.PI) / nf;
             Matrix v = new Matrix(nt, np);
+            Random rand = new Random();
+            Matrix w_ml = new Matrix(1, nf);
+            Matrix n_w_ml = new Matrix(1, nf);
+            Matrix phai = new Matrix(1, nf);
             for (int jj = 1; jj <=np; jj++)
             {
                 for (int ii = 1; ii <= nt; ii++)
@@ -111,15 +115,25 @@ namespace WindHistory
                     double t = (ii - 1) * dt;
                     for (int m = 1; m <=jj ; m++)
                     {
-                        for (int l = 1; l < nf; l++)
+                        double sum = 0;                                         
+                        for (int i = 1; i <=nf; i++)
                         {
-                            double w_ml = l * dw - (np - m) / np * dw;
-                            int n_w_ml =Convert.ToInt16( Math.Round(w_ml / dw)) + 1;
-                            Random rand = new Random();
-                            double rd = rand.Next();                                                                            //生成一个非负的随机整数
-                            v[ii, jj] += h[n_w_ml][jj, m] * Math.Sqrt(2 * dw) * Math.Cos(w_ml * t + 2 * Math.PI * rd);
+                            w_ml[1, i] = i * dw - (np - m) / np * dw;
+                            n_w_ml[1,i] = Math.Round(w_ml[1, i]/dw);
+                            if(n_w_ml[1, i] < 1)
+                            {
+                                n_w_ml[1, i] = 1;
+                            }
+                            else if(n_w_ml[1, i] > nf)
+                            {
+                                n_w_ml[1, i] = nf;
+                            }
+                            //phai[1, i] = 2 * Math.PI * rand.NextDouble()*i;
+                            phai[1, i] = 2 * Math.PI * 0.5 ;
+                            double s = h[Convert.ToInt16(n_w_ml[1, i])-1][jj, m] * Math.Sqrt(2 * dw) * Math.Cos(w_ml[1, i] * (t + theta[jj, m] + phai[1, i]));/////////
+                            sum += s;//////////////////
                         }
-                        
+                        v[ii, jj] += sum;//////////////////////
                     }
                 }
             }
