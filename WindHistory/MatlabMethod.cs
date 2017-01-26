@@ -26,7 +26,12 @@ namespace Matlab
             }
             return new Matrix(R);/////////////////////////////////////////////////////
         }
+        
 
+        public static Matrix sum(Matrix a)
+        {
+
+        }
 
 
         //#region 矩阵加法

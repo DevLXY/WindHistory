@@ -1,6 +1,6 @@
 ﻿using Matlab;
 using System;
-
+using System.Data;
 
 namespace WindHistory
 {
@@ -130,7 +130,7 @@ namespace WindHistory
                             }
                             //phai[1, i] = 2 * Math.PI * rand.NextDouble()*i;
                             phai[1, i] = 2 * Math.PI * 0.5 ;
-                            double s = h[Convert.ToInt16(n_w_ml[1, i])-1][jj, m] * Math.Sqrt(2 * dw) * Math.Cos(w_ml[1, i] * (t + theta[jj, m] + phai[1, i]));/////////
+                            double s = h[Convert.ToInt16(n_w_ml[1, i])-1][jj, m] * Math.Sqrt(2 * dw) * Math.Cos(w_ml[1, i] * (t + theta[jj, m]) + phai[1, i]);/////////
                             sum += s;//////////////////
                         }
                         v[ii, jj] += sum;//////////////////////
@@ -138,6 +138,7 @@ namespace WindHistory
                 }
             }
         }
+        
 
     }
 }
