@@ -10,8 +10,21 @@ namespace WindHistory
         {
             double[,] test = { { 3, 4.5 }, { 2, 4 }, { 1, 5 } };
             Matrix info = new Matrix(test);
-
+            
             WindHistory(4, 0.5, 5, 0.5, info);
+
+
+            //string[,] test1 = new string[test.GetLength(0), test.GetLength(1)];
+            //for (int i = 0; i < test.GetLength(0); i++)
+            //{
+            //    for (int j = 0; j < test.GetLength(1); j++)
+            //    {
+            //        test1[i, j] = test[i, j].ToString();
+            //    }
+            //}
+            //DataTable dat = MatlabMethod.ConvertToDataTable(test1);
+            //double a =Convert.ToDouble( dat.Compute("sum(1)", "1>0"));
+            
 
         }
 
@@ -108,6 +121,7 @@ namespace WindHistory
             Matrix w_ml = new Matrix(1, nf);
             Matrix n_w_ml = new Matrix(1, nf);
             Matrix phai = new Matrix(1, nf);
+            Matrix resharp = new Matrix(1, nf);////////////////
             for (int jj = 1; jj <=np; jj++)
             {
                 for (int ii = 1; ii <= nt; ii++)
@@ -115,29 +129,30 @@ namespace WindHistory
                     double t = (ii - 1) * dt;
                     for (int m = 1; m <=jj ; m++)
                     {
-                        double sum = 0;                                         
-                        for (int i = 1; i <=nf; i++)
+                        w_ml = (MatlabMethod.Linspace(1, nf, nf) * dw - ((np - (double)m) / np * dw));
+                        n_w_ml = MatlabMethod.Round(w_ml / dw);
+                        for (int i = 1; i <= nf; i++)
                         {
-                            w_ml[1, i] = i * dw - (np - m) / np * dw;
-                            n_w_ml[1,i] = Math.Round(w_ml[1, i]/dw);
-                            if(n_w_ml[1, i] < 1)
+                            if (n_w_ml[1, i] < 1)
                             {
                                 n_w_ml[1, i] = 1;
                             }
-                            else if(n_w_ml[1, i] > nf)
+                            if (n_w_ml[1, i] >nf )
                             {
                                 n_w_ml[1, i] = nf;
                             }
-                            //phai[1, i] = 2 * Math.PI * rand.NextDouble()*i;
-                            phai[1, i] = 2 * Math.PI * 0.5 ;
-                            double s = h[Convert.ToInt16(n_w_ml[1, i])-1][jj, m] * Math.Sqrt(2 * dw) * Math.Cos(w_ml[1, i] * (t + theta[jj, m]) + phai[1, i]);/////////
-                            sum += s;//////////////////
                         }
-                        v[ii, jj] += sum;//////////////////////
+                        phai = MatlabMethod.rand(1, nf);  
+
+                        for (int i = 1; i <= nf; i++)
+                        {
+                            resharp[1, i] = h[(int)n_w_ml[1,i]-1][jj, m];
+                        }
+                        v[ii, jj] += MatlabMethod.sum(resharp * Math.Sqrt(2 * dw) * MatlabMethod.Cos(w_ml * (t + theta[jj, m]) + phai));
                     }
                 }
             }
-        }
+      }
         
 
     }
