@@ -9,22 +9,18 @@ namespace WindHistory
         static void Main(string[] args)
         {
             double[,] test = { { 3, 4.5 }, { 2, 4 }, { 1, 5 } };
+
+            double[] test1 = { 1,3,5,7,9};
+            double[] test2 = { 1, -0.2, -0.3 };
+            Matrix test11 = new Matrix(test1);
+            Matrix test22 = new Matrix(test2);
+            Matrix test3 = new Matrix(1, 5);
+            test3=MatlabMethod.filter(1, test22, test11);
+
             Matrix info = new Matrix(test);
             
-            WindHistory(4, 0.5, 5, 0.5, info);
 
-
-            //string[,] test1 = new string[test.GetLength(0), test.GetLength(1)];
-            //for (int i = 0; i < test.GetLength(0); i++)
-            //{
-            //    for (int j = 0; j < test.GetLength(1); j++)
-            //    {
-            //        test1[i, j] = test[i, j].ToString();
-            //    }
-            //}
-            //DataTable dat = MatlabMethod.ConvertToDataTable(test1);
-            //double a =Convert.ToDouble( dat.Compute("sum(1)", "1>0"));
-            
+           // WindHistory(4, 0.5, 5, 0.5, info);
 
         }
 
@@ -152,8 +148,8 @@ namespace WindHistory
                     }
                 }
             }
-      }
-        
 
+
+      }
     }
 }

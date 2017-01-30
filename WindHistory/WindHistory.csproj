@@ -47,7 +47,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="OverrideTest.cs" />
     <Compile Include="MatlabMethod.cs" />
     <Compile Include="Matrix.cs" />
     <Compile Include="Program.cs" />

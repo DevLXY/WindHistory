@@ -57,7 +57,7 @@ namespace Matlab
         /// <param name="row"></param>
         /// <param name="col"></param>
         /// <returns>Matrix</returns>
-        public static Matrix rand(int row,int col)
+        public static Matrix rand(int row, int col)
         {
             Random rd = new Random();
             Matrix m = new Matrix(row, col);
@@ -80,7 +80,7 @@ namespace Matlab
         /// <returns>一个double类型的数</returns>
         public static double sum(Matrix a)
         {
-            if (a.RowCount==1&&a.ColumnCount!=1)
+            if (a.RowCount == 1 && a.ColumnCount != 1)
             {
                 double sum = 0;
                 for (int i = 1; i <= a.ColumnCount; i++)
@@ -110,9 +110,9 @@ namespace Matlab
         /// <param name="a"></param>
         /// <param name="b">0代表sum成行向量，1代表sum成列向量</param>
         /// <returns>行向量或列向量</returns>
-        public static Matrix sum(Matrix a,int b)
+        public static Matrix sum(Matrix a, int b)
         {
-            if (a.RowCount!=1&&a.ColumnCount!=1&&b==0)          //sum成一个行向量
+            if (a.RowCount != 1 && a.ColumnCount != 1 && b == 0)          //sum成一个行向量
             {
                 Matrix m = new Matrix(1, a.ColumnCount);
                 for (int i = 1; i <= a.RowCount; i++)
@@ -124,7 +124,7 @@ namespace Matlab
                 }
                 return m;
             }
-            else if(a.RowCount != 1 && a.ColumnCount != 1 && b == 1)
+            else if (a.RowCount != 1 && a.ColumnCount != 1 && b == 1)
             {
                 Matrix m = new Matrix(1, a.ColumnCount);
                 for (int i = 1; i <= a.RowCount; i++)
@@ -150,13 +150,86 @@ namespace Matlab
             {
                 for (int j = 1; j <= a.ColumnCount; j++)
                 {
-                    m[i, j] = Math.Cos(a[i, j]);                    
+                    m[i, j] = Math.Cos(a[i, j]);
                 }
             }
             return m;
         }
+        /// <summary>
+        /// 联合两个代码（这一块有瑕疵）
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static Matrix Combine(Matrix a, Matrix b)
+        {
+            Matrix m = new Matrix(1, a.ColumnCount + b.ColumnCount);
+            for (int i = 1; i <= a.ColumnCount; i++)
+            {
+                m[1, i] = a[1, i];
+            }
+            for (int j = a.ColumnCount + 1; j <= a.ColumnCount + b.ColumnCount; j++)
+            {
+                m[1, j] = b[1, a.ColumnCount + b.ColumnCount - j + 1];
+            }
+            return m;
 
+        }
 
+        //输入x（6）结果为0
+        public static Matrix filter(double b, Matrix a, Matrix x)                  //只适合a长度比矩阵x的rowcount少或者比行向量x的columncount少的情况
+        {
+            Matrix m = new Matrix(x.RowCount, x.ColumnCount);
+            if (a.RowCount != 1)
+            {
+                throw new Exception("a不是行向量");
+            }
+            else if (x.RowCount != 1)
+            {
+                for (int ix = 1; ix <= x.RowCount; ix++)                           //计算的n
+                {
+                    for (int jx = 1; jx <= x.ColumnCount; jx++)
+                    {
+                        m[ix, jx] = b * x[ix, jx] / a[1, 1];
+                        for (int i1 = 1; i1 <= a.ColumnCount; i1++)
+                        {
+                            if (i1 + 1 > a.ColumnCount || ix - i1 <= 0)
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                m[ix, jx] -= a[1, i1 + 1] * m[ix - i1, jx] / a[1, 1];
+                            }
+                        }
+                    }
+                }
+                return m;
+            }
+            else
+            {
+                    for (int jx = 1; jx <= x.ColumnCount; jx++)
+                    {
+                        m[1, jx] = b * x[1, jx] / a[1, 1];
+                        for (int i1 = 1; i1 <= a.ColumnCount; i1++)
+                        {
+                            if (i1 + 1 > a.ColumnCount || jx - i1 <= 0)
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                m[1, jx] -= a[1, i1 + 1] * m[1, jx-i1] / a[1, 1];
+                            }
+                        }
+                    }
+                
+                return m;
+            }
+
+        }
+
+        #region 一些无用的代码
         //public static DataTable ConvertToDataTable(string[,] arr)
         //{
 
@@ -179,7 +252,7 @@ namespace Matlab
 
         //}
 
-        #region 一些无用的代码
+
         //#region 矩阵加法
         //public static Matrix MatrixAdd(Matrix a, Matrix b)
         //{
