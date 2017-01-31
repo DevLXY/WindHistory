@@ -8,18 +8,12 @@ namespace WindHistory
     {
         static void Main(string[] args)
         {
-            double[,] test = { { 3, 4.5 }, { 2, 4 }, { 1, 5 } };
-
-            double[] test1 = { 1,3,5,7,9};
-            double[] test2 = { 1, -0.2, -0.3 };
-            Matrix test11 = new Matrix(test1);
-            Matrix test22 = new Matrix(test2);
-            Matrix test3 = new Matrix(1, 5);
-            test3=MatlabMethod.filter(1, test22, test11);
-
+            double[,] test = { { 1,2,2 }, { 3,4,4 }, { 3,4,4 } };
             Matrix info = new Matrix(test);
-            
-
+            Matrix test1 = MatlabMethod.ifftshift(info);
+            Console.WriteLine(info.ToString()+"\n");
+            Console.WriteLine(test1.ToString());
+            Console.ReadKey();
            // WindHistory(4, 0.5, 5, 0.5, info);
 
         }
@@ -148,8 +142,19 @@ namespace WindHistory
                     }
                 }
             }
-
-
+            /////////////////////////////////////
+            //差一个ifft变换
+            Matrix bb = new Matrix(1, 8193);
+            //
+            double[] d=new double [4];
+            for (int i = 0; i < 4; i++)
+            {
+                d[i] = bb[nt + 2 + i];
+            }
+            double[] aa = MatlabMethod.Ac2Poly(d, d.GetLength(0) - 1);
+            Matrix a = new Matrix(aa);
+            v = MatlabMethod.filter(1, a, v);
+            ///////////////////////////////////////
       }
     }
 }

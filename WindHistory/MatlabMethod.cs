@@ -208,26 +208,139 @@ namespace Matlab
             }
             else
             {
-                    for (int jx = 1; jx <= x.ColumnCount; jx++)
+                for (int jx = 1; jx <= x.ColumnCount; jx++)
+                {
+                    m[1, jx] = b * x[1, jx] / a[1, 1];
+                    for (int i1 = 1; i1 <= a.ColumnCount; i1++)
                     {
-                        m[1, jx] = b * x[1, jx] / a[1, 1];
-                        for (int i1 = 1; i1 <= a.ColumnCount; i1++)
+                        if (i1 + 1 > a.ColumnCount || jx - i1 <= 0)
                         {
-                            if (i1 + 1 > a.ColumnCount || jx - i1 <= 0)
-                            {
-                                break;
-                            }
-                            else
-                            {
-                                m[1, jx] -= a[1, i1 + 1] * m[1, jx-i1] / a[1, 1];
-                            }
+                            break;
+                        }
+                        else
+                        {
+                            m[1, jx] -= a[1, i1 + 1] * m[1, jx - i1] / a[1, 1];
                         }
                     }
-                
+                }
+
                 return m;
             }
 
+        }     
+
+        /// <summary>
+        /// Ac2Poly(Levinson-Durbin)
+        /// </summary>
+        /// <param name="r">输入的一维数组</param>
+        /// <param name="p">数组的个数-1</param>
+        /// <returns>变换之后的数组</returns>
+        public static double[] Ac2Poly(double[] r, int p)
+        {
+            double[] a = new double[r.GetLength(0)];
+            int i, j;
+            double err;
+
+            if (0 == r[0])
+            {
+                for (i = 0; i < p; i++)
+                {
+                    a[i] = 0;
+                }
+                return a;
+            }
+            a[0] = 1.0;
+            err = r[0];
+            for (i = 0; i < p; i++)
+            {
+                double lambda = 0.0;
+                for (j = 0; j <= i; j++)
+                    lambda -= a[j] * r[i + 1 - j];
+                lambda /= err;
+                // Update LPC coefficients and total error
+                for (j = 0; j <= (i + 1) / 2; j++)
+                {
+                    double temp = a[i + 1 - j] + lambda * a[j];
+                    a[j] = a[j] + lambda * a[i + 1 - j];
+                    a[i + 1 - j] = temp;
+                }
+                err *= (1.0 - lambda * lambda);
+            }
+            return a;
         }
+
+        /// <summary>
+        /// ifftshift函数（如果是奇数，分块时第一块比较小）
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static Matrix ifftshift(Matrix input)
+        {
+            int x = input.ColumnCount;
+            int y = input.RowCount;
+            Matrix m1 = new Matrix(input.RowCount, input.ColumnCount);
+            if (x%2==0)
+            {
+                int x1 = x / 2;
+                for (int i = 1; i <= input.RowCount; i++)
+                {
+                    for (int j = 1; j <= x1; j++)
+                    {
+                        m1[i, j] = input[i, j + x1];
+                        m1[i, j + x1] = input[i, j];
+                    }
+                }
+            }
+            else
+            {
+                int x1 = (int)(x / 2d - 0.5);
+                int x2 = (int)(x / 2d + 0.5);
+                for (int i = 1; i <= input.RowCount; i++)
+                {
+                    for (int j = 1; j <= x1; j++)
+                    {
+                        m1[i, j + x2] = input[i, j];
+                    }
+                    for (int j = 1; j <= x2; j++)
+                    {
+                        m1[i, j] = input[i, j+x1];
+                    }
+                }
+            }
+            Matrix m2 = new Matrix(input.RowCount, input.ColumnCount);
+            if (y % 2 == 0)
+            {
+                int y1 = y / 2;
+                for (int j = 1; j <= input.ColumnCount; j++)
+                {
+                    for (int i = 1; i <= y1; j++)
+                    {
+                        m2[i+y1, j] = m1[i, j];
+                        m2[i, j ] = m1[i+y1, j];
+                    }
+                }
+            }
+            else
+            {
+                int y1 = (int)(y / 2d - 0.5);
+                int y2 = (int)(y / 2d + 0.5);
+                for (int j = 1; j <= input.ColumnCount; j++)
+                {
+                    for (int i = 1; i <= y1; i++)
+                    {
+                        m2[i+y2, j] = m1[i, j];
+                    }
+                    for (int i = 1; i <= y2; i++)
+                    {
+                        m2[i, j] = m1[i+y1, j];
+                    }
+                }
+            }
+            return m2;
+
+        }
+
+
 
         #region 一些无用的代码
         //public static DataTable ConvertToDataTable(string[,] arr)
