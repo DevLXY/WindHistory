@@ -1,6 +1,7 @@
 ﻿using Matlab;
 using System;
 using System.Data;
+using FFTandIFFT;
 
 namespace WindHistory
 {
@@ -8,13 +9,13 @@ namespace WindHistory
     {
         static void Main(string[] args)
         {
-            double[,] test = { { 1,2,2 }, { 3,4,4 }, { 3,4,4 } };
+            double[,] test = { { 3, 4.5 }, { 2, 4 }, { 1, 5 } };
             Matrix info = new Matrix(test);
-            Matrix test1 = MatlabMethod.ifftshift(info);
-            Console.WriteLine(info.ToString()+"\n");
-            Console.WriteLine(test1.ToString());
-            Console.ReadKey();
-           // WindHistory(4, 0.5, 5, 0.5, info);
+            //Matrix test1 = MatlabMethod.ifftshift(info);
+            //Console.WriteLine(info.ToString()+"\n");
+            //Console.WriteLine(test1.ToString());
+            //Console.ReadKey();
+            WindHistory(4, 0.5, 5, 0.5, info);
 
         }
 
@@ -110,14 +111,14 @@ namespace WindHistory
             Random rand = new Random();
             Matrix w_ml = new Matrix(1, nf);
             Matrix n_w_ml = new Matrix(1, nf);
-            Matrix phai = new Matrix(1, nf);
+            Matrix phai = (new Matrix(1, nf) + 0.5) * 2 * Math.PI;////////////////////////////
             Matrix resharp = new Matrix(1, nf);////////////////
-            for (int jj = 1; jj <=np; jj++)
+            for (int jj = 1; jj <= np; jj++)
             {
                 for (int ii = 1; ii <= nt; ii++)
                 {
                     double t = (ii - 1) * dt;
-                    for (int m = 1; m <=jj ; m++)
+                    for (int m = 1; m <= jj; m++)
                     {
                         w_ml = (MatlabMethod.Linspace(1, nf, nf) * dw - ((np - (double)m) / np * dw));
                         n_w_ml = MatlabMethod.Round(w_ml / dw);
@@ -127,34 +128,44 @@ namespace WindHistory
                             {
                                 n_w_ml[1, i] = 1;
                             }
-                            if (n_w_ml[1, i] >nf )
+                            if (n_w_ml[1, i] > nf)
                             {
                                 n_w_ml[1, i] = nf;
                             }
                         }
-                        phai = MatlabMethod.rand(1, nf);  
+                        //phai = MatlabMethod.rand(1, nf) * 2 * Math.PI;
 
                         for (int i = 1; i <= nf; i++)
                         {
-                            resharp[1, i] = h[(int)n_w_ml[1,i]-1][jj, m];
+                            resharp[1, i] = h[(int)n_w_ml[1, i] - 1][jj, m];
                         }
                         v[ii, jj] += MatlabMethod.sum(resharp * Math.Sqrt(2 * dw) * MatlabMethod.Cos(w_ml * (t + theta[jj, m]) + phai));
                     }
                 }
             }
             /////////////////////////////////////
-            //差一个ifft变换
-            Matrix bb = new Matrix(1, 8193);
-            //
-            double[] d=new double [4];
+            Matrix m1 = new Matrix(1, 4097);
+            for (int i = 1; i <= 4096; i++)
+            {
+                m1[1, i] = s_ii[1, i];
+            }
+            m1[1, 4097] = 0;
+            Matrix m2 = new Matrix(1, 8193);
+            m2 = MatlabMethod.Combine(s_ii, m1);
+            FFT_IFFT If = new FFT_IFFT(m2.ToVector(), true);
+            double[] output_double = If.IFFT();
+            Matrix output = new Matrix(output_double);
+            Matrix bb = MatlabMethod.ifftshift(output);
+            double[] d = new double[4];
             for (int i = 0; i < 4; i++)
             {
                 d[i] = bb[nt + 2 + i];
             }
             double[] aa = MatlabMethod.Ac2Poly(d, d.GetLength(0) - 1);
             Matrix a = new Matrix(aa);
-            v = MatlabMethod.filter(1, a, v);
-            ///////////////////////////////////////
-      }
+            Matrix fin = MatlabMethod.filter(1, a, v);
+
+
+        }
     }
 }
